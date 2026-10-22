@@ -57,5 +57,38 @@
     if (ok) form.reset();
   });
 
+  // Scroll progress + back to top
+  const bar = $('#progress'), up = $('#totop');
+  addEventListener('scroll', () => {
+    const h = document.documentElement;
+    bar.style.width = (scrollY / (h.scrollHeight - innerHeight || 1) * 100) + '%';
+    up.classList.toggle('show', scrollY > 600);
+  }, { passive: true });
+  up.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Card spotlight follows the pointer
+  document.addEventListener('pointermove', e => {
+    const c = e.target.closest && e.target.closest('.card');
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', e.clientX - r.left + 'px');
+    c.style.setProperty('--my', e.clientY - r.top + 'px');
+  });
+
+  // Gentle 3D tilt on the hero chart (mouse devices only)
+  const cc = $('.chart-card');
+  if (cc && matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+    cc.addEventListener('pointermove', e => {
+      const r = cc.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      cc.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg)`;
+    });
+    cc.addEventListener('pointerleave', () => cc.style.transform = '');
+  }
+
+  // Newsletter
+  document.querySelectorAll('.news').forEach(f => f.addEventListener('submit', e => {
+    e.preventDefault(); f.innerHTML = '<b>Thanks! You are subscribed.</b>';
+  }));
+
   $('#yr').textContent = new Date().getFullYear();
 })();
